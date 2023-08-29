@@ -65,8 +65,9 @@
 </body >
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
 <script>
-
-const socket = io.connect('https://careforyou.onrender.com/socket.io');
+const socket = io.connect('https://careforyou.onrender.com', {
+    transports: ['websocket']
+});
 
 
 
