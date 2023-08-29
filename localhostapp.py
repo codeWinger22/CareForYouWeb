@@ -45,8 +45,8 @@ from engineio.async_drivers import gevent
 # now we will import the environment variables
 # GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID',None)
 # GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET',None)
-GOOGLE_CLIENT_SECRET = "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"
-GOOGLE_CLIENT_ID = "652381501875-h5el2ralptfcvliggtrc52t9hm1nimbd.apps.googleusercontent.com"
+GOOGLE_CLIENT_SECRET = "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"
+GOOGLE_CLIENT_ID = "652381501875-vav5i893k6atvuj80vei5j0u77cfid5v.apps.googleusercontent.com"
 
 GOOGLE_DISCOVERY_URL = ("https://accounts.google.com/.well-known/openid-configuration")
 
@@ -525,14 +525,14 @@ def login(flag):
         google_provider_cgf = get_google_provider_cfg()
         authorization_endpoint = google_provider_cgf['authorization_endpoint']
         request_uri = client.prepare_request_uri(authorization_endpoint,
-                                                 redirect_uri="https://careforyou.onrender.com/login/callbackAdmin",
+                                                 redirect_uri="http://localhost:5000/login/callbackAdmin",
                                                  scope=['openid', 'email', 'profile'])
         print("completed login process", request_uri)
     elif (flag == '2'):
         google_provider_cgf = get_google_provider_cfg()
         authorization_endpoint = google_provider_cgf['authorization_endpoint']
         request_uri = client.prepare_request_uri(authorization_endpoint,
-                                                 redirect_uri="https://careforyou.onrender.com/login/callbackDoctor",
+                                                 redirect_uri="http://localhost:5000/login/callbackDoctor",
                                                  scope=['openid', 'email', 'profile'])
         print("completed login process", request_uri)
 
@@ -540,7 +540,7 @@ def login(flag):
         google_provider_cgf = get_google_provider_cfg()
         authorization_endpoint = google_provider_cgf['authorization_endpoint']
         request_uri = client.prepare_request_uri(authorization_endpoint,
-                                                 redirect_uri="https://careforyou.onrender.com/login/callbackPatient",
+                                                 redirect_uri="http://localhost:5000/login/callbackPatient",
                                                  scope=['openid', 'email', 'profile'])
         print("completed login process", request_uri)
 
@@ -564,7 +564,7 @@ def callbackAdmin():
 
     # prepare token url
     token_url, headers, body = client.prepare_token_request(token_endpoint, authorization_response=request.url,
-                                                            redirect_url="https://careforyou.onrender.com/login/callbackAdmin",
+                                                            redirect_url="http://localhost:5000/login/callbackAdmin",
                                                             code=code)
     token_response = requests.post(token_url, headers=headers, data=body, auth=(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET))
     client.parse_request_body_response(json.dumps(token_response.json()))
@@ -620,7 +620,7 @@ def callbackDoctor():
 
     # prepare token url
     token_url, headers, body = client.prepare_token_request(token_endpoint, authorization_response=request.url,
-                                                            redirect_url="https://careforyou.onrender.com/login/callbackDoctor",
+                                                            redirect_url="http://localhost:5000/login/callbackDoctor",
                                                             code=code)
     token_response = requests.post(token_url, headers=headers, data=body, auth=(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET))
     client.parse_request_body_response(json.dumps(token_response.json()))
@@ -768,7 +768,7 @@ def callbackPatient():
 
     # prepare token url
     token_url, headers, body = client.prepare_token_request(token_endpoint, authorization_response=request.url,
-                                                            redirect_url="https://careforyou.onrender.com/login/callbackPatient",
+                                                            redirect_url="http://localhost:5000/login/callbackPatient",
                                                             code=code)
     token_response = requests.post(token_url, headers=headers, data=body, auth=(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET))
     client.parse_request_body_response(json.dumps(token_response.json()))
