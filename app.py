@@ -1,17 +1,19 @@
 import json
 import os
+import re
 import sqlite3
 from flask_sqlalchemy import SQLAlchemy
-from flask import Flask, render_template, request, redirect, url_for, jsonify
+from flask import Flask, render_template, request, redirect, url_for, jsonify, make_response
 
 #for chat
 
 from datetime import datetime
 from bson.json_util import dumps
 from flask_socketio import SocketIO, join_room, leave_room
+from jinja2 import environment
 from pymongo.errors import DuplicateKeyError
 from db import get_user, save_user, save_room, add_room_members, get_rooms_for_user, get_room, is_room_member, \
-   get_room_members, is_room_admin, update_room, remove_room_members, save_message, get_messages,get_room_existence
+   get_room_members, is_room_admin, update_room, remove_room_members, save_message, get_messages,get_room_existence,add_room_member
 from flask_cors import CORS, cross_origin
 
 
@@ -37,7 +39,7 @@ from oauthlib.oauth2 import WebApplicationClient
 # WebapplicationClient because we are building it on the client side
 import requests
 # from db import init_db_command
-from user import User, UserProfile
+from user import User, UserProfile,PatientChat
 from engineio.async_drivers import gevent
 
 # now we will import the environment variables
@@ -50,6 +52,10 @@ GOOGLE_DISCOVERY_URL = ("https://accounts.google.com/.well-known/openid-configur
 
 # this discovery url is basically the one from where your app will fetch google account from
 
+import warnings
+from flask_sqlalchemy import FSADeprecationWarning
+
+warnings.simplefilter('ignore', FSADeprecationWarning)
 
 
 app = Flask(__name__, static_url_path='/static')
@@ -121,7 +127,8 @@ def assignDoctors():
     doctordata = UserProfile.getDoctorData(flag = 1)
     #the above method returns count of doctors if present or returns None
     patientdata = UserProfile.getDoctorData(flag=2)    #returns list with count and query result
-    if((doctordata[0] != 0) and (patientdata[0] != 0)):
+
+    if((doctordata != 0) and (patientdata[0] != 0)):
         docCount = doctordata[0]
         patCount = patientdata[0]
         docdata= doctordata[1]
@@ -137,12 +144,13 @@ def assignDoctors():
             max_capacity = patCount
             print(max_capacity)
             for i in range(patCount):
-                d[docdata[i][0]] = patdata[i][0]
+                d[patdata[i][0]] = docdata[i][0]
 
             #a = docdata[0][0]
             #b = patdata[0][0]
             #d = {a : b}
             print(d)
+            print(max_capacity,"this is max capacity")
             create_room(d)
         else:
             max_capacity = patCount//docCount
@@ -160,13 +168,23 @@ def algorithmicAssignment(patCount,docCount,docData,patData,max_capacity):
     patlist= []
     #patdata and docdata contains tuple inside list
     for i in docData:
-        doclist.append(i[0])
+        doclist.append(i[0])    #extracts id
     for j in patData:
         patlist.append(j[0])
     d = dict()
+    print(patlist)
+    print(doclist)
     if (max_capacity == patCount):
+        count = 1
+        maincount = 0
         for i in range(max_capacity):
-            d[doclist[i]] = patlist[i]
+            #key would be patient id as the room will be created using patientid
+            if (count > max_capacity):
+                count = 1
+                maincount = maincount + 1
+            d[patlist[i]] = doclist[maincount]
+            # d[doclist[maincount]] = patlist[i]  this would have given error afterwords because keys cannot be same for all values
+            count = count + 1
 
     else:
         print("here")
@@ -176,22 +194,8 @@ def algorithmicAssignment(patCount,docCount,docData,patData,max_capacity):
             if (count > max_capacity):
                 count = 1
                 maincount = maincount + 1
-            patval = patlist[i]
-            d[doclist[maincount]] = patlist[i]
-            count = count + 1
-        count = 1
-        maincount = 0
-        l = []
-        for i in range(patCount):
-            if (count > max_capacity):
-                d[doclist[maincount]] = l
-                count = 1
-                l = []
-                maincount = maincount + 1
-            patval = patlist[i]
-            # d[patval] = doct[maincount
-
-            l.append(patlist[i])
+            d[patlist[i]] = doclist[maincount]
+           # d[doclist[maincount]] = patlist[i]  this would have given error afterwords because keys cannot be same for all values
             count = count + 1
 
     print(d)
@@ -207,39 +211,73 @@ def algorithmicAssignment(patCount,docCount,docData,patData,max_capacity):
 
 def create_room(d):
     count = 0
-    initial = "room"
+    initial = "chatroom"
     try:
+        print(d)
         for key,value in d.items():
             room_name = initial + str(count)
-            prevroom = get_rooms_for_user(key)
-            print(type(prevroom))
-            result = findoutroom(prevroom,room_name,key,value)
-
-
-
+            #prevroom = get_rooms_for_user(key)
+            a = PatientChat.getRoomDetails(room_name)
+            print(a)
+            if(a !=None):
+                print("room exists already")
+                print(get_room(a.roomid))
+                print(get_room_members(a.roomid))
+            else:
+                print("room does not exists so creating one")
+                room_id = save_room(room_name, key)
+                print(room_id)
+                add_room_member(room_id, room_name, value, key, True)
+                print("members added")
+                b = PatientChat.getPatientRoom(room_id,room_name,key,value)
+                print("created room successfully")
             count = count + 1
+
     except Exception as e:
-        print(e)
+        print(e,"from create room")
 
 def findoutroom(prevroom,room_name,key,value):
 
     for i in prevroom:
         if(i['room_name'] == room_name):
             print(i)
+            room_id = i['_id']['room_id']
             print("user already exists")
+            username = value
+            addedby = key
+            #tempfunction(room_id,room_name,username,addedby)
 
             return 1
         else:
-            print("reached else")
-            room_id = save_room(room_name,key)
-            add_room_members(room_id,room_name,value,key)
+            print(i)
+            print(i['_id']['room_id'])
             return 0
     return 0
 
         #admin for the room will be doctor itself (you can change it later to site admin as well)
 
 
+def tempfunction(room_id,room_name,username,addedby):
+    room_id = "64e7db73f62ce6a34645ed3a"
+    try:
+        room = get_room(room_id)
+        if room and is_room_admin(room_id, addedby):
+            existing_room_members = [member['_id']['username'] for member in get_room_members(room_id)]
+            room_members_str = ",".join(existing_room_members)
+            message = ''
+            room['name'] = room_name
+            update_room(room_id, room_name)
 
+            new_members = [username]
+            members_to_add = list(set(new_members) - set(existing_room_members))
+            members_to_remove = list(set(existing_room_members) - set(new_members))
+            if len(members_to_add):
+                add_room_members(room_id, room_name, members_to_add, current_user.username)
+            if len(members_to_remove):
+                remove_room_members(room_id, members_to_remove)
+            print("edited successfully")
+    except Exception as e:
+        print(e,"in tempfunction")
 
 
 
@@ -248,31 +286,32 @@ def findoutroom(prevroom,room_name,key,value):
 @app.route('/')
 def index():
     assignDoctors()
+    #tempfunction1(room_id='64eb0b88ba72fb44dd94d6f5' , room_name = "room0", username='105062158331384984251', addedby='117516444703522221231' )
     print("reached in index api")
     print(current_user)
-    if (current_user.is_authenticated):
-        print("from final ")
-        print(current_user.name)
-        print(current_user.email)
-        return ("<h1> YOU ARE LOGGED IN </h1>"
-                "<div> <p> Google Profile </p>"
-                '<img src = "{}" alt = "Google Profile Pic" ></img></div>'
-                '<a class "button" href = "/logout">Logout</a>'.format(current_user.name, current_user.email,
-                                                                       current_user.profile_pic))
-    else:
-        print("not authenticated")
-        return render_template('index.html')
+    return render_template('index.html')
+    #if (current_user.is_authenticated):
+     #   print("from final ")
+      #  print(current_user.name)
+       # print(current_user.email)
+        #return ("<h1> YOU ARE LOGGED IN </h1>"
+            #    "<div> <p> Google Profile </p>"
+             #   '<img src = "{}" alt = "Google Profile Pic" ></img></div>'
+              #  '<a class "button" href = "/logout">Logout</a>'.format(current_user.name, current_user.email,
+               #                                                        current_user.profile_pic))
+    #else:
+    #    print("not authenticated")
+     #   return render_template('index.html')
     # return '<a class = "button" href = "/loginAdmin"> Google Admin Login </a>  <br><br> <a class = "button" href = "/loginDoctor"> Google Login </a>'
 
+@app.route('/signin')
+def signin():
+    return render_template('signin.html')
 
-@app.route('/doctorsign')
-def doctorsign():
-    return render_template("doctorsignup.html")
 
 
-@app.route('/doctorclick')
-def doctorclick():
-    return render_template('doctor_click.html')
+
+
 
 
 @app.route('/adminapprovedoctor')
@@ -286,6 +325,14 @@ def adminapprovedoctor():
 
 @app.route('/adminviewdoctor')
 def adminviewdoctor():
+    a = UserProfile.getDoctorData(1)
+    if(a != None):
+        data = a[1]
+        print(data)
+
+        print("data found in view doctor")
+        return render_template('admin_view_doctor.html',data = data)
+    print("data not found in view doctor")
     return render_template('admin_view_doctor.html')
 
 
@@ -324,46 +371,108 @@ def adminindex():
 
 
 @app.route('/doctorindex')
+@cross_origin()
 def doctorindex():
     if (current_user.is_authenticated):
         print("from final ")
         print(current_user.name)
         print(current_user.email)
-        return ("<h1> YOU ARE LOGGED IN AS DOCTOR</h1>"
-                "<div> <p> Google Profile </p>"
-                '<img src = "{}" alt = "Google Profile Pic" ></img></div>'
-                '<a class "button" href = "/logout">Logout</a>'.format(current_user.name, current_user.email,
-                                                                       current_user.profile_pic))
+        a = PatientChat.getDoctorChat(current_user.id)
+
+        # now we need to showcase the room assigned to the patient
+        print(a)
+        print(type(a))
+        if (a != None):
+            return redirect(url_for('doctorchatlist'))
+
+        else:
+            print("no room found for this user")
+            return "Room Not Found", 404
+
+    return render_template('index.html')
+
+
+@app.route('/doctorchatlist')
+def doctorchatlist():
+    data = PatientChat.getDoctorChat(current_user.id)
+    print(data,"from doctorchatlist")
+    print(type(data))
+    if(data != None):
+        for i in data:
+            print(i)
+        return render_template('doctorchatlist.html',data=data)
+    return render_template('doctorchatlist.html')
+
+@app.route('/doctorchat<room_id>')
+def doctorchat(room_id):
+    print("reached doctorchat")
+    room = get_room(room_id)
+    print(room, "this is room")
+    print(room['_id'])
+    print(current_user.id)
+    if((room != None) and (is_room_member(room_id, current_user.id))):
+        room_members = get_room_members(room_id)
+        messages = get_messages(room_id)
+        print("room and user autheticated")
+        return render_template('view_room.html', username=current_user.id, room=room,
+                               room_members=room_members,
+                               messages=messages, doctor_name=current_user.id)
+
+
+        #return ("<h1> YOU ARE LOGGED IN AS DOCTOR</h1>"
+        #"<div> <p> Google Profile </p>"
+        #'<img src = "{}" alt = "Google Profile Pic" ></img></div>'
+        #'<a class "button" href = "/logout">Logout</a>'.format(current_user.name, current_user.email,
+         #                                                      current_user.profile_pic))
     else:
         print("not authenticated")
         return render_template('index.html')
 
 
 @app.route('/patientindex')
+@cross_origin()
 def patientindex():
+
     if (current_user.is_authenticated):
         print("from final ")
         print(current_user.name)
         print(current_user.email)
-        prevroom = get_rooms_for_user(current_user.id)
-        print(type(prevroom))
-        print(prevroom)
-        for i in prevroom:
-            print(i['_id']['room_id'])
-            print(i['username'])
-       # print(i['_id']['room_id'])
-        # room id required
-        room = get_room(room_id)
-        print(room, "this is room")
-        print(room['_id'])
-        if room and is_room_member(room_id, current_user.username):
-            room_members = get_room_members(room_id)
-            messages = get_messages(room_id)
-            return render_template('view_room.html', username=current_user.username, room=room,
-                                   room_members=room_members,
-                                   messages=messages)
+        a = PatientChat.getPatientRoomName(current_user.id)
+        # now we need to showcase the room assigned to the patient
+        if(a == None):
+            print("no room found for this user")
+            return "Room Not Found",404
         else:
-            return "Room not found", 404
+            room_id = a.roomid
+            room = get_room(room_id)
+            print(room, "this is room")
+            print(room['_id'])
+            print(current_user.id)
+            if(room != None and is_room_admin(room_id,current_user.id)):
+                room_members = get_room_members(room_id)
+                messages = get_messages(room_id)
+                newdata =PatientChat.getPatientRoomName(current_user.id)
+                if(newdata != None):
+                    doctorid = newdata.doctorid
+                    new_result = UserProfile.getDoctorName(doctorid)
+                    if(new_result != None):
+                        doctor_name = "Dr. "
+                        doctor_name = doctor_name + new_result.name
+
+
+                print("room and user autheticated")
+                d = dict()
+                d['username'] = current_user.id
+                d['room'] = room
+                d['room_members'] = room_members
+                d['messages'] = messages
+                d['doctor_name'] = doctor_name
+                d['room_id'] = room_id
+
+                return render_template('view_room.html', username=current_user.id, room=room,
+                                   room_members=room_members,
+                                   messages=messages,doctor_name = doctor_name,room_id=room_id)
+
 
         return render_template('patienthome.html')
         # return ("<h1> YOU ARE LOGGED IN AS PATIENT</h1>"
@@ -373,6 +482,21 @@ def patientindex():
     else:
         print("not authenticated")
         return render_template('index.html')
+
+
+@app.route('/rooms/<room_id>/messages/')
+@login_required
+def get_older_messages(room_id):
+    print("reached in loading messges")
+    room = get_room(room_id)
+    if room and is_room_member(room_id, current_user.id):
+        page = int(request.args.get('page', 0))
+        messages = get_messages(room_id, page)
+        print("returning successfully")
+        return dumps(messages)
+    else:
+        return "Room not found", 404
+
 
 
 
@@ -387,6 +511,9 @@ def logout():
 
     # return '<a class = "button" href = "/login"> Google Login </a>'
 
+@app.route('/logoutwithout')
+def logoutwithout():
+    return redirect(url_for('index'))
 
 @app.route('/login<flag>')
 def login(flag):
@@ -454,28 +581,29 @@ def callbackAdmin():
     else:
         return "User email not available or not verified by google", 400
     # now we need to insert this user inside our sqlite db
+    pattern = r"^[a-zA-Z0-9._%+-]+@gofynd\.com$"
+    if ((re.match(pattern, user_email)) or (user_email == "gourivpawar@gmail.com")):
+        user = User(id=unique_id, name=username, email=user_email, profile_pic=picture)
+        print(unique_id)
+        returnfunction = User.get(unique_id, flag)
+        print(returnfunction)
+        if (returnfunction != None):
+            print("user already exists")
 
-    user = User(id=unique_id, name=username, email=user_email, profile_pic=picture)
-    print(unique_id)
+        else:
+            User.create(unique_id, username, user_email, picture, flag)
+            # start the session
+        if (login_user(user)):
+            print("user logged in")
+            print("completed callback admin process ")
+            current_user.autheticated = True
+            return render_template('admin_doctor.html')
+        else:
+            print("user not logged in")
 
-    returnfunction = User.get(unique_id, flag)
-    print(returnfunction)
-    if (returnfunction != None):
-        print("user already exists")
-    else:
-
-        User.create(unique_id, username, user_email, picture, flag)
-
-    # start the session
-    if (login_user(user)):
-        print("user logged in")
-        print("completed callback admin process ")
-        current_user.autheticated = True
-    else:
-        print("user not logged in")
 
     # and redirect to the homepage
-    return redirect(url_for('connection'))  # def index which is created previously
+    return redirect(url_for('adminindex'))  # def index which is created previously
 
 
 @app.route('/login/callbackDoctor')
@@ -513,13 +641,23 @@ def callbackDoctor():
     user = User(id=unique_id, name=username, email=user_email, profile_pic=picture)
 
     print(unique_id, "from callbackdoctor")
+    #to check if the user is patient already
+    returnfunction = User.get(unique_id, flag=3)
+    print(returnfunction)
+    if (returnfunction != None):
+        print("user is patient already exists")
+        return render_template("AlreadyPatient.html",id = unique_id)
 
+
+
+    #else will require lot of indentation we will assume that either way if the if condition satisfies it will return
     returnfunction = User.get(unique_id, flag)
     result = UserProfile.getProfile(unique_id, flag)
 
     print(returnfunction)
     print(result, "getprofile")
     # print(result.status,"from doctorcallback")
+
 
     if (returnfunction != None):
         if (result != None):
@@ -535,11 +673,14 @@ def callbackDoctor():
                     current_user.autheticated = True
                     return redirect(url_for('doctorindex'))
 
-
+        else:
+            print("user exists in main table but not in doctorprofile")
+            return render_template('doctorprofile.html', id=unique_id)
 
     else:
 
         User.create(unique_id, username, user_email, picture, flag)
+        print("user does not exists anywhere please apply")
         return render_template('doctorprofile.html', id=unique_id)
 
     return redirect(url_for('doctorindex'))
@@ -558,13 +699,22 @@ def callbackDoctor():
 # and redirect to the homepage
 # return redirect(url_for('doctorindex')) #def index which is created previously
 
+@app.route('/RemovePatientProfile',methods = ['POST'])
+def RemovePatientProfile():
+    print("removing patient")
+    if(request.method == 'POST'):
+        data = request.form
+        user = data['id']
+        a = User.removePatient(user)
+        return render_template("index.html")
+    return render_template("index.html")
 
 @app.route('/getDoctorProfile', methods=['POST'])
 def getDoctorProfile():
     data = request.form
     name = data['name']
     email = data['email']
-    address = data['qualification']
+    address = data['address']
     qualification = data['qualification']
     user = data['id']
 
@@ -579,7 +729,9 @@ def getDoctorProfile():
     if(returnfunction == None):
         data = UserProfile.getApproval()
         if (data == None):
-            return render_template('admin_approve_doctor.html')
+            #even though this function is useless
+            return render_template('index.html')
+            #return render_template('admin_approve_doctor.html')
     else:
         status = 0
         id = returnfunction.id
@@ -633,29 +785,76 @@ def callbackPatient():
     else:
         return "User email not available or not verified by google", 400
     # now we need to insert this user inside our sqlite db
+    returnfunction = User.get(unique_id, flag=2)
+    result = UserProfile.getProfile(unique_id, flag=2)
 
     user = User(id=unique_id, name=username, email=user_email, profile_pic=picture)
     print(unique_id)
-
-    returnfunction = User.get(unique_id, flag)
-    print(returnfunction)
     if (returnfunction != None):
-        print("user already exists")
+        if (result != None):
+            if (result.status == 1):
+                return render_template('AlreadyDoctor.html')
+            else:
+                print("this user is not doctor")
+                returnfunction = User.get(unique_id, flag)
+                print(returnfunction)
+                if (returnfunction != None):
+                    print("user already exists")
+                else:
+                    User.create(unique_id, username, user_email, picture, flag)
+
+                    # start the session
+                if (login_user(user)):
+                    print("user logged in")
+                    print("completed callback patient process ")
+                    current_user.autheticated = True
+                    print("done in callback patient")
+                    return redirect(url_for('patientindex'))  # def index which is created previously
+                else:
+                    print("user not logged in")
+                    return redirect(url_for('patientindex'))
+
+        else:
+            print("this user is not doctor")
+            returnfunction = User.get(unique_id, flag)
+            print(returnfunction)
+            if(returnfunction != None):
+                print("user already exists")
+            else:
+                User.create(unique_id, username, user_email, picture, flag)
+
+                #start the session
+            if (login_user(user)):
+                print("user logged in")
+                print("completed callback patient process ")
+                current_user.autheticated = True
+                print("done in callback patient")
+                return redirect(url_for('patientindex'))  # def index which is created previously
+            else:
+                print("user not logged in")
+                return redirect(url_for('patientindex'))
+
     else:
+        print("this user is not doctor")
+        returnfunction = User.get(unique_id, flag)
+        print(returnfunction)
+        if (returnfunction != None):
+            print("user already exists")
+        else:
+            User.create(unique_id, username, user_email, picture, flag)
 
-        User.create(unique_id, username, user_email, picture, flag)
+            # start the session
+        if (login_user(user)):
+            print("user logged in")
+            print("completed callback patient process ")
+            current_user.autheticated = True
+            print("done in callback patient")
+            return redirect(url_for('patientindex'))  # def index which is created previously
+        else:
+            print("user not logged in")
+            return redirect(url_for('patientindex'))
 
-    # start the session
-    if (login_user(user)):
-        print("user logged in")
-        print("completed callback patient process ")
-        current_user.autheticated = True
-    else:
-        print("user not logged in")
-
-    # and redirect to the homepage
-    return redirect(url_for('patientindex'))  # def index which is created previously
-
+    return render_template("index.html")
 
 # -----------------------------------------------------------------------
 
@@ -723,9 +922,60 @@ def callback():
     """
 
 
+
+@socketio.on('send_message')
+def handle_send_message_event(data):
+    app.logger.info("{} has sent message to the room {}: {}".format(data['username'],
+                                                                    data['room'],
+                                                                    data['message']))
+    data['created_at'] = datetime.now().strftime("%d %b, %H:%M")
+    save_message(data['room'], data['message'], data['username'])
+    socketio.emit('receive_message', data, room=data['room'])
+
+
+
+
+
+
+@app.after_request
+def after_request_func(response):
+    origin = request.headers.get('Origin')
+    if request.method =='OPTIONS':
+        response = make_response()
+        response.headers.add('Access-Control-Allow-Credentials','true')
+        response.headers.add('Access-Control-Allow-Headers','Content-Type')
+        response.headers.add('Access-Control-Allow-Headers','x-csrf-token')
+        response.headers.add('Access_Control-Allow-Methods','GET,POST,OPTIONS,PUT,PATCH.DELETE')
+        if origin:
+            response.headers.add('Access-Control-Allow-Origin',origin)
+    else:
+        response.headers.add('Access-Control-Allow-Credentials','true')
+        if origin:
+            response.headers.add('Access-Control-Allow-Origin',origin)
+    return response
+
+
+
+@socketio.on('join_room')
+def handle_join_room_event(data):
+    app.logger.info("{} has joined the room {}".format(data['username'], data['room']))
+    join_room(data['room'])
+    socketio.emit('join_room_announcement', data, room=data['room'])
+
+
+@socketio.on('leave_room')
+def handle_leave_room_event(data):
+    app.logger.info("{} has left the room {}".format(data['username'], data['room']))
+    leave_room(data['room'])
+    socketio.emit('leave_room_announcement', data, room=data['room'])
+
 def get_google_provider_cfg():
     return requests.get(GOOGLE_DISCOVERY_URL).json()
 
 
+
 if __name__ == '__main__':
-    app.run(debug=True)
+    #app.run(debug=True)
+    #socketio.run(app, host='0.0.0.0', port=8000)
+
+    socketio.run(app, debug=True)

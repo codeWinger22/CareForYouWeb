@@ -165,6 +165,30 @@ class User(UserMixin):
         finally:
             con.close()
 
+
+    @staticmethod
+    def removePatient(userid):
+        try:
+            con = sqlite3.connect("database.db")
+            cur = con.cursor()
+        except:
+            print("connection error in user create function")
+        try:
+            cur.execute('DELETE FROM userPatient  WHERE id = ? ', (userid,))
+            con.commit()
+            return 1
+
+        except Exception as e:
+            con.rollback()
+            print("Error in the Removing Doctor")
+            print(e)
+
+
+
+        finally:
+            con.close()
+        return 0
+
     @staticmethod
     def remove(userid):
         try:
@@ -236,6 +260,41 @@ class UserProfile:
         finally:
             con.close()
 
+    @staticmethod
+    def getDoctorName(doctorid):
+        global con
+        user = None
+        try:
+            con = sqlite3.connect("database.db")
+            cur = con.cursor()
+        except:
+            print("connection error in getDoctorName details")
+        try:
+            print(doctorid)
+            cur.execute('SELECT * FROM DoctorProfile  WHERE id = ? ', (doctorid,))
+            rows = cur.fetchone()
+            print(rows)
+            if not rows:
+                return None
+            else:
+                print(rows[0])
+                user = UserProfile(id=rows[0], name=rows[1], email=rows[2], address=rows[3], qualification=rows[4],
+                                   status=rows[5])
+                print(user)
+
+            print("Record successfully retrieved from  database")
+            return user
+
+        except Exception as e:
+            con.rollback()
+            print("Error in the retriving  doctor name from DoctorProfile table")
+            print(e)
+
+
+
+
+        finally:
+            con.close()
 
     @staticmethod
     def getProfile(user_id, flag):
@@ -362,7 +421,8 @@ class UserProfile:
         try:
             if(flag==1):
                 #return doctor data
-                cur.execute("SELECT * FROM DoctorProfile")
+                status = 1
+                cur.execute('SELECT * FROM DoctorProfile WHERE status = ? ', (status,))
                 rows = cur.fetchall()
                 count = 0
                 for i in rows:
@@ -419,3 +479,176 @@ class UserProfile:
             con.close()
 
         return 0
+
+
+
+
+class PatientChat:
+    def __init__(self, roomid, roomname, doctorid, patientid):
+        self.roomid = roomid
+        self.roomname = roomname
+        self.doctorid = doctorid
+        self.patientid = patientid
+
+    @staticmethod
+    def getPatientRoom(roomid,roomname, patientid, doctorid):
+        global con
+        try:
+            con = sqlite3.connect("database.db")
+            cur = con.cursor()
+        except:
+            print("connection error in getPatientRoom details")
+        try:
+
+            cur.execute("INSERT INTO roomCred (roomid, roomname, doctorid, patientid) VALUES (?,?,?,?)",
+                        (str(roomid), str(roomname), str(doctorid), str(patientid)))
+            con.commit()
+            print("Record successfully added to database")
+            return 1
+
+        except Exception as e:
+            con.rollback()
+            print("Error in the inserting patient room details in roomCred table")
+            print(e)
+
+
+
+        finally:
+            con.close()
+
+        return 0
+
+    @staticmethod
+    def getRoomDetails(roomname):
+        global con
+        user = None
+        try:
+            con = sqlite3.connect("database.db")
+            cur = con.cursor()
+        except:
+            print("connection error in getPatientRoom details")
+        try:
+            print(roomname)
+            cur.execute('SELECT * FROM roomCred WHERE roomname = ? ', (roomname,))
+            rows = cur.fetchone()
+            print(rows)
+            if not rows:
+                return None
+            else:
+                print(rows[0])
+                user = PatientChat(roomid=rows[0], roomname=rows[1], doctorid=rows[2], patientid=rows[3])
+                print(user)
+            print("Record successfully retrieved from  database")
+            return user
+
+        except Exception as e:
+            con.rollback()
+            print("Error in the retriving data in roomCred table")
+            print(e)
+
+
+
+
+        finally:
+            con.close()
+
+    @staticmethod
+    def getPatientRoomName(patientid):
+        global con
+        user = None
+        try:
+            con = sqlite3.connect("database.db")
+            cur = con.cursor()
+        except:
+            print("connection error in getPatientRoomName details")
+        try:
+            print(patientid)
+            cur.execute('SELECT * FROM roomCred WHERE patientid = ? ', (patientid,))
+            rows = cur.fetchone()
+            print(rows)
+            if not rows:
+                return None
+            else:
+                print(rows[0])
+                user = PatientChat(roomid=rows[0], roomname=rows[1], doctorid=rows[2], patientid=rows[3])
+                print(user)
+            print("Record successfully retrieved from  database")
+            return user
+
+        except Exception as e:
+            con.rollback()
+            print("Error in the retriving data from roomCred")
+            print(e)
+
+
+
+
+        finally:
+            con.close()
+
+    @staticmethod
+    def getDoctorRoomName(doctorid):
+        global con
+        user = None
+        try:
+            con = sqlite3.connect("database.db")
+            cur = con.cursor()
+        except:
+            print("connection error in getDoctorRoomName details")
+        try:
+            print(doctorid)
+            cur.execute('SELECT * FROM roomCred WHERE doctorid = ? ', (doctorid,))
+            rows = cur.fetchone()
+            print(rows)
+            if not rows:
+                return None
+            else:
+                print("Record successfully retrieved from  database")
+                return rows
+
+            return None
+
+        except Exception as e:
+            con.rollback()
+            print("Error in the inserting patient room details in roomCred table")
+            print(e)
+
+
+
+
+        finally:
+            con.close()
+
+    @staticmethod
+    def getDoctorChat(doctorid):
+        global con
+        user = None
+        try:
+            con = sqlite3.connect("database.db")
+            cur = con.cursor()
+        except:
+            print("connection error in getDoctorRoomName details")
+        try:
+            print(doctorid)
+            cur.execute('SELECT * FROM roomCred WHERE doctorid = ? ', (doctorid,))
+            rows = cur.fetchall()
+            print(rows)
+            if not rows:
+                return None
+            else:
+                print("Record successfully retrieved from  database")
+
+                return rows
+
+            return None
+
+        except Exception as e:
+            con.rollback()
+            print("Error in retriving data for doctorchatlist")
+            print(e)
+
+
+
+
+        finally:
+            con.close()

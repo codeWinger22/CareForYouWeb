@@ -1,62 +1,114 @@
-{% extends 'admin_base.html' %}
-{% block content %}
 
 
-<head>
-  <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+<!DOCTYPE html>
+<html lang="en">
+
+
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sign In</title>
+    <link rel="stylesheet" href="static/css/index.css" />
+     <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
   <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
   <script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+    />
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/typed.js/2.0.11/typed.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/waypoints/4.0.1/jquery.waypoints.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css"
+    />
+    <link rel="manifest" href="images/favicon_io/site.webmanifest" />
+    <link rel="icon" href="images/favicon_io/favicon.ico" />
+  </head>
+  <body>
+    <section class="contact" id="contact">
+      <div class="max-width">
+        <h2 class="title">Admin Panel</h2>
+        <div class="contact-content">
+          <div class="column left">
 
-  <style media="screen">
-    a:link {
-      text-decoration: none;
-    }
+            </div>
+          </div>
+          <div class="column right">
 
-    h6 {
-      text-align: center;
-    }
+            <div class="form">
+              <div class="fields">
 
-    .row {
-      margin: 100px;
-    }
-  </style>
-</head>
-<!--
-written By : sumit kumar
-facebook : fb.com/sumit.luv
--->
-<div class="container">
+              <div
+                class="text"
+                style="display: none; color: aquamarine"
+                id="sucess"
+              >
+                Submitted Sucessfully!
+              </div>
+
+          <div class="container">
   <div class="panel panel-primary">
-    <div class="panel-heading">
-      <h6 class="panel-title">Doctors</h6>
-    </div>
+
     <table class="table table-hover" id="dev-table">
       <thead>
         <tr>
 
+          <th>ID</th>
           <th>Name</th>
-          <th>Profile Picture</th>
-          <th>Mobile</th>
+          <th>Email</th>
           <th>Address</th>
-          <th>Department</th>
-          <th>Update</th>
-          <th>Delete</th>
+          <th>Qualification</th>
+
         </tr>
       </thead>
-      {% for d in doctors %}
+         {% for i in data %}
       <tr>
+        <td> {{i[0]}}</td>
 
-        <td> {{d.get_name}}</td>
-        <td> <img src="\images\doctor.png" alt="Profile Pic" height="40px" width="40px" /></td>
-        <td>{{d.mobile}}</td>
-        <td>{{d.address}}</td>
-        <td>{{d.department}}</td>
-        <td><a class="btn btn-primary btn-xs" href=""><span class="glyphicon glyphicon-edit"></span></a></td>
-        <td><a class="btn btn-danger btn-xs" href=""><span class="glyphicon glyphicon-trash"></span></a></td>
+        <td>{{i[1]}} </td>
+        <td>{{i[2]}}</td>
+        <td>{{i[3]}}</td>
+        <td>{{i[4]}}</td>
+
+
       </tr>
+
       {% endfor %}
     </table>
   </div>
 </div>
 
-{% endblock content %}
+
+
+
+            </div>
+           <center><br>
+<a class="button" href="{{ url_for('logout') }}"><center>Logout</center></a>
+            </center>
+
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- footer section start -->
+    <footer>
+      <div>
+        <ul class="ekuIIGG">
+
+        </ul>
+
+      </div>
+      <span
+        >Designed & Built by<br /><a href=""
+          ><i class="fab fa-github"></i> Gouri Pawar</a
+        ></span
+      >
+    </footer>
+
+    <script src="script.js"></script>
+  </body>
+</html>

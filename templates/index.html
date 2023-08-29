@@ -1,16 +1,182 @@
-<html>
-    <head>
-        <title>
-            Demo
-        </title>
-    </head>
-    <body>
-        <h1> Main Page </h1>
-        <a class = "button" href = "{{ url_for('login',flag = 1) }}" > Google Login For Admin </a> <br> <br>
-         <a class = "button" href = "{{ url_for('login',flag = 2) }}"> Google Login For Doctor </a> <br> <br>  
-        <a class = "button" href = "{{ url_for('login',flag = 3) }}"> Google Login For Student </a> <br> <br>
 
-    <a class = "button" href = "{{ url_for('doctorclick')}}"> Doctor Apply</a>
+<!DOCTYPE html>
+<html lang="en">
 
-    </body>
-    </html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CARE FOR YOU</title>
+    <link rel="stylesheet" href="static/css/index.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/typed.js/2.0.11/typed.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/waypoints/4.0.1/jquery.waypoints.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css" />
+    <link rel="manifest" href="images/favicon_io/site.webmanifest">
+    <link rel="icon" href="images/favicon_io/favicon.ico">
+<style>
+   .alert {
+  padding: 20px;
+  background-color: black;
+  color: white;
+}
+
+.closebtn {
+  margin-left: 15px;
+  color: white;
+  font-weight: bold;
+  float: right;
+  font-size: 22px;
+
+  line-height: 20px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.closebtn:hover {
+  color: black;
+}
+</style>
+
+</head>
+
+<body>
+<div class="alert fonts">
+  <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
+  <strong>Attention</strong>
+CareForYou is presently in the prototype stage. Currently, the Admin Panel exclusively accepts email addresses with the domain gofynd.com.
+</div>
+    <div class="scroll-up-btn">
+        <i class="fas fa-angle-up"></i>
+    </div>
+    <nav class="navbar">
+        <div class="max-width">
+            <div class="logo"><a href="#"><span>Care</span>ForYou</a></div>
+            <ul class="menu">
+                <li><a href="#home" class="menu-btn"> Home</a></li>
+                <li><a href="#about" class="menu-btn"> About</a></li>
+                <li><a href="{{ url_for('signin') }}" class="menu-btn"> SignIn</a></li>
+            </ul>
+            <div class="menu-btn">
+                <i class="fas fa-bars"></i>
+            </div>
+        </div>
+    </nav>
+    <!-- side socials -->
+     <div orientation="left" class="drtqvU">
+        <div class="jpBPby">
+            <a href="#" class="ioLRCa">CareForYou</a>
+        </div>
+    </div>
+    <div orientation="right" class="drtqvU">
+        <div class="jpBPby">
+            <a href="#" class="ioLRCa">CareForYou</a>
+        </div>
+    </div>
+
+    <!-- home section start -->
+    <section class="home" id="home">
+        <div class="max-width">
+            <div class="home-content">
+                <div class="text-1">Welcome to CareForYou</div>
+                <div class="text-2">Your Partner in Mental Health and Wellness</div>
+                <div class="text-4"></div>
+             <!--   <div class="text-3">And I'm a <span class="typing"></span></div>    -->
+                <!-- <a href="mailto:dk0133964@gmail.com">Hire me!</a> -->
+            </div>
+        </div>
+    </section>
+
+    <!-- about section start -->
+     <section class="about section" id="about">
+            <h2 class="section-title">Take a look at our features</h2>
+            <div class="row about-section">
+                <div class="about__img">
+                    <div class="about-img">
+                        <img src="static/images/undraw_connected_8wvi.svg" alt="">
+                    </div>
+                    <div class="about__details">
+                        <h2 class="about__subtitle">Expert Counselors<span>!</span></h2>
+                <!--            <span class="about__profession">Available for both web and mobile.</span> -->
+                            <p class="about__text">Our carefully selected counselors specialize in a wide range of mental health areas, including anxiety, depression, stress, trauma, and more. They bring their expertise and empathy to create a personalized counseling experience tailored to your needs.</p>
+                    </div>
+                </div>
+                <div class="about__img">
+                    <div class="about__details">
+                        <h2 class="about__subtitle">Confidential and Secure<span>!</span></h2>
+                    <!--        <span class="about__profession">Available for both web and mobile.</span> -->
+                            <p class="about__text">Your privacy is our top priority. CareForYou employs advanced security measures to ensure that your interactions and personal information remain confidential and secure.</p>
+                    </div>
+                    <div class="about-img">
+                        <img src="static/images/undraw_Messages_re_qy9x (1).svg" alt="">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    <!-- skills section start -->
+
+
+
+    <!-- footer section start -->
+    <footer>
+        <div>
+        </div>
+
+    </footer>
+    <script>
+        function sendMessage() {
+            var p = document.getElementById("sucess");
+            var name = document.getElementById("name");
+            var email = document.getElementById("email");
+            var msg = document.getElementById("msg");
+            var sub = document.getElementById("sub");
+            if (name.value != "" & email.value != "" & msg.value != "" & sub.value != "") {
+                p.style.display = "block";
+                setTimeout(function () { p.style.display = "none" }, 5000);
+                const request = new XMLHttpRequest();
+                request.open("POST", "https://discord.com/api/webhooks/926082077013725194/-J9e50eDskPZDj62o_ud3RQIXTHaH4e0PGZNWoh2vRBEIy2S4gtndpJdPGBUafkkmWJG");
+
+                request.setRequestHeader('Content-type', 'application/json');
+
+                const params = {
+                    username: "mrDeepak.in",
+                    avatar_url: "",
+                    content: "**Name:**" + "`" + name.value + "`" +
+                        " **Email:**" + "`" + email.value + "`" +
+                        " **Subject:**" + "`" + sub.value + "`" +
+                        " **Message:**" + "`" + msg.value + "`",
+                }
+                request.send(JSON.stringify(params));
+                document.getElementById('name').value = '';
+                document.getElementById('email').value = '';
+                document.getElementById('msg').value = '';
+                document.getElementById('sub').value = '';
+            }
+        }
+
+        function showmore() {
+            var p = document.getElementById("hide");
+            p.style.display = "flex";
+            var p = document.getElementById("showmore");
+            p.style.display = "none";
+            var p = document.getElementById("showless");
+            p.style.display = "block";
+        }
+
+        function showless() {
+            var p = document.getElementById("hide");
+            p.style.display = "none";
+            var p = document.getElementById("showless");
+            p.style.display = "none";
+            var p = document.getElementById("showmore");
+            p.style.display = "block";
+        }
+    </script>
+    <script src="script.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,148 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="static/css/index.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+    />
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/typed.js/2.0.11/typed.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/waypoints/4.0.1/jquery.waypoints.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css"
+    />
+    <link rel="manifest" href="images/favicon_io/site.webmanifest" />
+    <link rel="icon" href="images/favicon_io/favicon.ico" />
+    <meta charset="UTF-8">
+    <title>CareForYou</title>
+</head>
+<body>
+<br><br><br><center>
+<h1 style="font-family: 'Poppins', sans-serif;">You are Assigned to {{ doctor_name }}</h1>
+</center>
+
+<br><br><br>
+<center>
+
+<button type="button" class = "button"  id="load_older_messages_btn"   style="font-family: 'Poppins', sans-serif; font-size:13px">Load Older Messages</button>
+
+</center><br><br>
+<center>
+<div id="messages" style= "font-size: 15px;
+    font-family: 'Courier Prime', monospace;">
+    {% for message in messages %}
+        <div><b>{{ message.sender }}&nbsp;[{{ message.created_at }}]:&nbsp;</b> {{ message.text }}</div>
+    {% endfor %}
+</div></center>
+<br><br>
+<form id="message_input_form">
+
+     <div class="fields">
+                <div class="field name">
+
+
+
+    <center> <input type="text" id="message_input" placeholder="Enter your message here"></center>
+                    <br><br> </div></div>
+    <center>   <button class="button" type="submit">Send</button>  </center>
+</form>
+<center><br>
+<h3>Members</h3>
+<ul>
+    {% for member in room_members %}
+        <li>{{ member._id.username }}</li>
+    {% endfor %}
+</ul></center>
+ <center><br>
+<a class="button" href="{{ url_for('logout') }}"><center>Logout</center></a>
+            </center>
+</div>
+
+</body >
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
+<script>
+    const socket = io.connect();
+
+
+    socket.on('connect', function () {
+        socket.emit('join_room', {
+            username: "{{ username }}",
+            room: "{{ room._id }}"
+        });
+
+        let message_input = document.getElementById('message_input');
+
+        document.getElementById('message_input_form').onsubmit = function (e) {
+            e.preventDefault();
+            let message = message_input.value.trim();
+            if (message.length) {
+                socket.emit('send_message', {
+                    username: "{{ username }}",
+                    room: "{{ room._id }}",
+                    message: message
+                })
+            }
+            message_input.value = '';
+            message_input.focus();
+        }
+    });
+
+    let page = 0;
+
+    document.getElementById("load_older_messages_btn").onclick = (e) => {
+        page += 1;
+
+        fetch("/rooms/{{ room_id }}/messages?page=" + page, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        }).then(response => {
+            response.json().then(messages => {
+                messages.reverse().forEach(message => prepend_message(message.text, message.sender, message.created_at));
+            })
+        })
+    };
+
+    function prepend_message(message, username, created_at) {
+        const newNode = document.createElement('div');
+        newNode.innerHTML = `<b>${username}&nbsp;[${created_at}]:&nbsp;</b> ${message}`;
+        const messages_div = document.getElementById('messages');
+        messages_div.insertBefore(newNode, messages_div.firstChild);
+    }
+
+    window.onbeforeunload = function () {
+        socket.emit('leave_room', {
+            username: "{{ username }}",
+            room: "{{ room_id }}"
+        })
+    };
+
+    socket.on('receive_message', function (data) {
+        console.log(data);
+        const newNode = document.createElement('div');
+        newNode.innerHTML = `<b>${data.username}&nbsp;[${data.created_at}]:&nbsp;</b> ${data.message}`;
+        document.getElementById('messages').appendChild(newNode);
+    });
+
+    socket.on('join_room_announcement', function (data) {
+        console.log(data);
+        if (data.username !== "{{ username }}") {
+            const newNode = document.createElement('div');
+            newNode.innerHTML = `<b>${data.username}</b> has joined the room`;
+            document.getElementById('messages').appendChild(newNode);
+        }
+    });
+
+    socket.on('leave_room_announcement', function (data) {
+        console.log(data);
+        const newNode = document.createElement('div');
+        newNode.innerHTML = `<b>${data.username}</b> has left the room`;
+        document.getElementById('messages').appendChild(newNode);
+    });
+</script>
+</html>

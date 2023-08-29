@@ -1,7 +1,6 @@
 import sqlite3
 
 
-
 #conn.execute('CREATE TABLE if not exists user (name TEXT, addr TEXT, city TEXT, zip TEXT)')
 try:
     conn = sqlite3.connect('database.db')
@@ -76,11 +75,42 @@ try:
 except Exception as e:
     print(e)
 
+try:
+    conn.execute('CREATE TABLE if not exists roomCred(roomid TEXT UNIQUE PRIMARY KEY ,roomname TEXT NOT NULL ,doctorid TEXT  NOT NULL,patientid TEXT NOT NULL)')
+    print("Created table successfully  room credentials!")
+except Exception as e:
+    print(e)
 
 
+
+try:
+    roomname = "room0"
+    cur.execute('SELECT * FROM roomCred WHERE roomname = ? ', (roomname,))
+    #cur.execute('SELECT * FROM roomCred ')
+    rows = cur.fetchone()
+    for i in rows:
+        print(i)
+except Exception as e:
+    print(e)
+try:
+    patientid = "117516444703522221231"
+    cur.execute('SELECT * FROM roomCred')
+    rows = cur.fetchall()
+    print(rows)
+    if not rows:
+        print(None)
+    else:
+        for i in rows:
+            print(i['patientid'])
+            print(i['doctorid'])
+        print(rows[0])
+except Exception as e:
+    print("error",e)
 finally:
     conn.close()
     print("database closed")
+
+
 
 
 #

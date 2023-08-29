@@ -20,18 +20,20 @@ else:
     l = []
     for i in range(patientcount):
         if(count>max_capacity):
-            d[doct[maincount]] = l
-            count =1
-            l = []
-            maincount = maincount + 1
-        patval = pat[i]
-        #d[patval] = doct[maincount
 
-        l.append(pat[i])
+            count =1
+
+            maincount = maincount + 1
+
+        #d[patval] = doct[maincount
+        d[pat[i]] = doct[maincount]
         count = count +1
+
+
 
 print("ended")
 print(d)
+
     
 
     
