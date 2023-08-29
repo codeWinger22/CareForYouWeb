@@ -949,9 +949,10 @@ def after_request_func(response):
         if origin:
             response.headers.add('Access-Control-Allow-Origin',origin)
     else:
-        response.headers.add('Access-Control-Allow-Credentials','true')
+        response.headers.add('Access-Control-Allow-Credentials', 'true')
+        response.headers.add('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE')
         if origin:
-            response.headers.add('Access-Control-Allow-Origin',origin)
+            response.headers.add('Access-Control-Allow-Origin', origin)
     return response
 
 
