@@ -65,8 +65,8 @@ app.config['SECRET_KEY'] = "secret key"
 db = SQLAlchemy(app)
 app.secret_key = "sfdjkafnk"
 socketio = SocketIO(app,cors_allowed_origins="https://careforyou.onrender.com")
-
-CORS(app, resources={r"/*": {"origins": "https://careforyou.onrender.com"}})
+cors = CORS(app, resource={r"/*": {"origins": "*"}})
+#CORS(app, resources={r"/*": {"origins": "https://careforyou.onrender.com"}})
 app.config['CORS_HEADERS'] = 'Content-Type'
 
 
