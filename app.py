@@ -3,7 +3,7 @@ import os
 import re
 import sqlite3
 from flask_sqlalchemy import SQLAlchemy
-from flask import Flask, render_template, request, redirect, url_for, jsonify, make_response
+from flask import Flask, render_template, request, redirect, url_for, jsonify, make_response,session
 
 #for chat
 
@@ -505,6 +505,7 @@ def logout():
     if (logout_user()):
         print("logged out")
         current_user.authenticated = False
+        session.pop('username', None)
 
     return redirect(url_for('index'))
 
@@ -848,6 +849,7 @@ def callbackPatient():
             print("user logged in")
             print("completed callback patient process ")
             current_user.autheticated = True
+            session['username'] = unique_id
             print("done in callback patient")
             return redirect(url_for('patientindex'))  # def index which is created previously
         else:
