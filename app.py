@@ -976,7 +976,9 @@ def get_google_provider_cfg():
 
 
 if __name__ == '__main__':
+    socketio.run(app, host='0.0.0.0', debug=True)
+
     #app.run(debug=True)
     #socketio.run(app, host='0.0.0.0', port=8000)
 
-    socketio.run(app, debug=True)
+    #socketio.run(app, debug=True)
