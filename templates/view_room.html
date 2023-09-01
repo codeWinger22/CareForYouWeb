@@ -84,12 +84,13 @@ const socket = io.connect();
                 socket.emit('send_message', {
                     username: "{{ username }}",
                     room: "{{ room._id }}",
-                    message: message,
-                    console.log("message sent");
+                    message: message
+
                 })
             }
             message_input.value = '';
             message_input.focus();
+            console.log("message sent");
         }
     });
 
