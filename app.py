@@ -64,7 +64,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///basicinformation.sqlite3'
 app.config['SECRET_KEY'] = "secret key"
 db = SQLAlchemy(app)
 app.secret_key = "sfdjkafnk"
-socketio = SocketIO(app)
+socketio = SocketIO(app, manage_session=False)
 CORS(app)
 #cors = CORS(app, resource={r"/*": {"origins": "*"}})
 CORS(app, resources={r"/*": {"origins": "https://careforyou.onrender.com/"}})
