@@ -64,7 +64,8 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///basicinformation.sqlite3'
 app.config['SECRET_KEY'] = "secret key"
 db = SQLAlchemy(app)
 app.secret_key = "sfdjkafnk"
-socketio = SocketIO(app, manage_session=False,logger = True, engineio_logger=True)
+#socketio = SocketIO(app, manage_session=False,logger = True, engineio_logger=True)
+socketio = SocketIO(app, manage_session=False,logger = True, engineio_logger=True,async_mode='eventlet')
 CORS(app)
 #cors = CORS(app, resource={r"/*": {"origins": "*"}})
 CORS(app, resources={r"/*": {"origins": "https://careforyou.onrender.com/"}})
@@ -935,6 +936,7 @@ def handle_send_message_event(data):
     save_message(data['room'], data['message'], data['username'])
     socketio.emit('receive_message', data, room=data['room'])
     print(data['message'])
+    app.logger.info("the message has been sent from the server")
 
 
 
