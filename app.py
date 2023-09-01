@@ -4,7 +4,8 @@ import re
 import sqlite3
 from flask_sqlalchemy import SQLAlchemy
 from flask import Flask, render_template, request, redirect, url_for, jsonify, make_response,session
-
+import eventlet
+eventlet.monkey_patch(exclude=['dns'])
 #for chat
 
 from datetime import datetime
