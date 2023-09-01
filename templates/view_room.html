@@ -84,7 +84,8 @@ const socket = io.connect();
                 socket.emit('send_message', {
                     username: "{{ username }}",
                     room: "{{ room._id }}",
-                    message: message
+                    message: message,
+                    console.log("message sent");
                 })
             }
             message_input.value = '';
