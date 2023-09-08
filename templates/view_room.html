@@ -146,5 +146,21 @@ const socket = io.connect();
         newNode.innerHTML = `<b>${data.username}</b> has left the room`;
         document.getElementById('messages').appendChild(newNode);
     });
+
+fetch("https://careforyou.onrender.com/", {
+    method: 'GET',  // Replace with the correct HTTP method
+    headers: {
+        'Content-Type': 'application/json'
+    }
+}).then(response => {
+    console.log(response.status);  // Log the status code
+    return response.json();  // Log the response data
+}).then(data => {
+    console.log(data);
+}).catch(error => {
+    console.error("Error:", error);
+});
+
+
 </script>
 </html>

@@ -38,5 +38,6 @@ typing_extensions==4.7.1
 tzdata==2023.3
 urllib3==1.26.4
 Werkzeug==1.0.1
+waitress == 2.1.2
 zope.event==5.0
 zope.interface==6.0
