@@ -41,3 +41,4 @@ urllib3==1.26.4
 Werkzeug==1.0.1
 zope.event==5.0
 zope.interface==6.0
+uwsgi
