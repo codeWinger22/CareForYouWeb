@@ -5,7 +5,13 @@ from pymongo import MongoClient, DESCENDING
 from werkzeug.security import generate_password_hash
 
 from userchat import UserChat
+try:
+    client = MongoClient("mongodb+srv://test:test@chatapp-q7wkc.mongodb.net/test?retryWrites=true&w=majority")
 
+    # Code for MongoDB connection with SSL
+
+except Exception as e:
+    print("Error from mongo:", e)
 client = MongoClient("mongodb+srv://test:test@chatapp-q7wkc.mongodb.net/test?retryWrites=true&w=majority")
 
 chat_db = client.get_database("ChatDB")
