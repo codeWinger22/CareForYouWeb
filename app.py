@@ -74,8 +74,8 @@ app.secret_key = "sfdjkafnk"
 
 socketio = SocketIO(app, manage_session=False, logger=True, engineio_logger=True)
 
-#CORS(app, resources={r"/*": {"origins": ["https://careforyou.onrender.com", "ws://careforyou.onrender.com"]}})
-CORS(app, resources={r"/*"})
+CORS(app, resources={r"/*": {"origins": ["https://careforyou.onrender.com", "ws://careforyou.onrender.com"]}})
+#CORS(app, resources={r"/*"})
 
 app.config['CORS_HEADERS'] = 'Content-Type'
 
