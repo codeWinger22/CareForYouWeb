@@ -4,7 +4,7 @@ import re
 import sqlite3
 from flask_sqlalchemy import SQLAlchemy
 from flask import Flask, render_template, request, redirect, url_for, jsonify, make_response,session
-
+import eventlet
 #for chat
 
 from datetime import datetime
@@ -72,7 +72,7 @@ app.secret_key = "sfdjkafnk"
 
 ##app.config['CORS_HEADERS'] = 'Content-Type'
 
-socketio = SocketIO(app, manage_session=False, logger=True, engineio_logger=True)
+socketio = SocketIO(app,async_mode='eventlet', manage_session=False, logger=True, engineio_logger=True)
 
 CORS(app, resources={r"/": {"origins": "https://careforyou.onrender.com"}})
 app.config['CORS_HEADERS'] = 'Content-Type'
@@ -987,6 +987,7 @@ def after_request_func(response):
 
 
 if __name__ == '__main__':
+    eventlet.monkey_patch()
     socketio.run(app, host='0.0.0.0', debug=True)
 
     #app.run(debug=True)
