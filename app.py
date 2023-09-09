@@ -65,14 +65,17 @@ app.config['SECRET_KEY'] = "secret key"
 db = SQLAlchemy(app)
 app.secret_key = "sfdjkafnk"
 #socketio = SocketIO(app, manage_session=False,logger = True, engineio_logger=True)
-socketio = SocketIO(app, manage_session=False,logger = True, engineio_logger=True)
-CORS(app)
+##socketio = SocketIO(app, manage_session=False,logger = True, engineio_logger=True)
+##CORS(app)
 #cors = CORS(app, resource={r"/*": {"origins": "*"}})
+##CORS(app, resources={r"/": {"origins": "https://careforyou.onrender.com"}})
+
+##app.config['CORS_HEADERS'] = 'Content-Type'
+
+socketio = SocketIO(app, manage_session=False, logger=True, engineio_logger=True)
+
 CORS(app, resources={r"/": {"origins": "https://careforyou.onrender.com"}})
-
 app.config['CORS_HEADERS'] = 'Content-Type'
-
-
 
 # either you can set a secret key in environment variable or just generate a 24char secret key
 
