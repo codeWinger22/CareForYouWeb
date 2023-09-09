@@ -74,7 +74,7 @@ app.secret_key = "sfdjkafnk"
 
 socketio = SocketIO(app, manage_session=False, logger=True, engineio_logger=True)
 
-CORS(app, resources={r"/": {"origins": "https://careforyou.onrender.com"}})
+CORS(app, origins="https://careforyou.onrender.com")
 app.config['CORS_HEADERS'] = 'Content-Type'
 
 # either you can set a secret key in environment variable or just generate a 24char secret key
