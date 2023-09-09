@@ -82,7 +82,7 @@ const socket = io.connect("https://careforyou.onrender.com/socket.io");
             if (message.length) {
                 socket.emit('send_message', {
                     username: "{{ username }}",
-                    room: "{{ room._id }}",
+                    room: "{{ room_id }}",
                     message: message
 
                 })
