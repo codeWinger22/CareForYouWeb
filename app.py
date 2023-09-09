@@ -936,14 +936,17 @@ def callback():
 
 @socketio.on('send_message')
 def handle_send_message_event(data):
-    app.logger.info("{} has sent message to the room {}: {}".format(data['username'],
+    try:
+        app.logger.info("{} has sent message to the room {}: {}".format(data['username'],
                                                                     data['room'],
                                                                     data['message']))
-    data['created_at'] = datetime.now().strftime("%d %b, %H:%M")
-    save_message(data['room'], data['message'], data['username'])
-    socketio.emit('receive_message', data, room=data['room'])
-    print(data['message'])
-    app.logger.info("the message has been sent from the server")
+        data['created_at'] = datetime.now().strftime("%d %b, %H:%M")
+        save_message(data['room'], data['message'], data['username'])
+        socketio.emit('receive_message', data, room=data['room'])
+        print(data['message'])
+        app.logger.info("the message has been sent from the server")
+    except Exception as e:
+        print(e)
 
 
 
