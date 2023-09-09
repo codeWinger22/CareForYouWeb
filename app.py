@@ -937,6 +937,7 @@ def callback():
 @socketio.on('send_message')
 def handle_send_message_event(data):
     try:
+        app.logger.info("reached the send_message event")
         app.logger.info("{} has sent message to the room {}: {}".format(data['username'],
                                                                     data['room'],
                                                                     data['message']))
@@ -946,7 +947,8 @@ def handle_send_message_event(data):
         print(data['message'])
         app.logger.info("the message has been sent from the server")
     except Exception as e:
-        print(e)
+        app.logger.info(e)
+
 
 
 
