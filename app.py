@@ -988,8 +988,8 @@ def after_request_func(response):
 
 if __name__ == '__main__':
     eventlet.monkey_patch()
-    #socketio.run(app, host='0.0.0.0', debug=True)
-    app.run(debug= True, host = '0.0.0.0')
+    socketio.run(app, host='0.0.0.0', debug=True)
+    #app.run(debug= True, host = '0.0.0.0')
     #app.run(debug=True)
     #socketio.run(app, host='0.0.0.0', port=8000)
 
