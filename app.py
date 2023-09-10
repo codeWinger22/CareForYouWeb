@@ -943,7 +943,8 @@ def handle_send_message_event(data):
                                                                     data['message']))
         data['created_at'] = datetime.now().strftime("%d %b, %H:%M")
         save_message(data['room'], data['message'], data['username'])
-        socketio.emit('receive_message', data, room=data['room'])
+        #socketio.emit('receive_message', data, room=data['room'])
+        socketio.emit('receive_message', data)
         print(data['message'])
         app.logger.info("the message has been sent from the server")
     except Exception as e:
